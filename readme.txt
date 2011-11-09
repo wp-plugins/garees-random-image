@@ -40,6 +40,9 @@ Main-advantages:
 
 == Changelog ==
 
+= 0.7.1 =
+* bugfixes (only adminpage)
+
 = 0.7 =
 * first official release
 

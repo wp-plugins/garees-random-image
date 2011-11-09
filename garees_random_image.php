@@ -188,7 +188,7 @@ function garees_random_image_plugin_actions( $links, $file ){
 	$this_plugin = plugin_basename(__FILE__);
 	
 	if ( $file == $this_plugin ){
-		$settings_link = '<a href="plugins.php?page=garees-random-image">' . __('Description') . '</a>';
+		$settings_link = '<a href="plugins.php?page=garees_random_image">' . __('Description') . '</a>';
 		array_unshift( $links, $settings_link );
 	}
 	return $links;
