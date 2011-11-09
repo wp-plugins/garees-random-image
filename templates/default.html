@@ -1,0 +1,6 @@
+{{! very basic template: shows a thumbnail linked to the full image. underneath the thumbnail is the post-title with a link to the post itself. If 'size' isn't set, display thumbnail, else take 'size' }}
+
+<a href='{{full_image_url}}' title='{{image_title}}' alt='{{image_title}}'>
+   	{{#size}}{{{image}}}{{/size}}{{^size}}{{{thumbnail}}}{{/size}}
+</a><br />
+<small>{{{post}}}</small>
