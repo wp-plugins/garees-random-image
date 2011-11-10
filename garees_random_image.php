@@ -201,7 +201,7 @@ function garees_random_image_show_menu() {
 
 ?>
 
-<div id="gareeBox"> <small>If you like me plugin, you can buy me a coffee!<br />
+<div id="gareeBox"> <small>If you like my plugin, you can buy me a coffee!<br />
   </small><br />
   <a class="FlattrButton" style="display:none;" href="http://www.garee.ch/garees-random-image/"></a>
   <noscript>
