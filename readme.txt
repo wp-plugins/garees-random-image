@@ -6,19 +6,26 @@ Requires at least: 3.0.0
 Tested up to: 3.2.1
 Stable tag: trunk
 
-Garee's Random Image is a highly customizable WordPress-plugin that shows a random image anywhere on your blog.
+a highly customizable WordPress-plugin that shows a random image anywhere on your blog.
 
 == Description ==
-*Garee's Random Image* is a highly customizable WordPress-plugin that shows a random image anywhere on your blog. The output is generated from template-files or your own templates, which you can write with Mustache. 
+*Garee's Random Image* shows a random image anywhere on your blog. The output is generated from template-files (html and css) or your own templates, which you can write with Mustache.
 
-Just insert the shortcode anywhere on your blog: `[random_image]`
-
-Use shortcode-attributes to further customize the image: `[random_image template='polaroid' category='30' polaroid_font_size='14px' polaroid_width='360px']`
+Check out the [live-demo](http://www.garee.ch/wordpress/garees-random-image/live-demo/) on the official [plugin-site](http://www.garee.ch/wordpress/garees-random-image/)
 
 Main-advantages:
 
 * CSS only included if shortcode found on page
 * highly customizable with Mustache-templates
+* only show pictures associated with a certain post-category
+* only show jpg, png or gif
+* choose from 6 different themes
+* easily write your own theme using html, css and images
+
+Just insert the shortcode anywhere on your blog: `[random_image]`
+
+Use shortcode-attributes to further customize the image:
+`[random_image template='polaroid' category='30' polaroid_font_size='14px' polaroid_width='360px']`
 
 == Installation ==
 
@@ -37,6 +44,15 @@ Main-advantages:
 5. Write your own templates with [Mustache](http://mustache.github.com/)
 
 == Frequently Asked Questions ==
+
+= How do I write Mustache-Code =
+Have a look at the enclosed html-templates in the template-folder. For advanced syntax () there's the mustache(5)-manual on the [Mustache-Site](http://mustache.github.com/)
+
+= My random images look different from the ones on the demo-page =
+This might be because your wordpress-theme's css has an influence on the output of the plugin. You might have to adjust the css-template (set margins to zero, stuff like this)
+
+= I would like to add the random image as a widget on the sidebar =
+Just add a text-widget to the sidebar and insert the shortcode there
 
 == Changelog ==
 
