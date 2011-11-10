@@ -3,7 +3,7 @@
 Plugin Name: Garee's Random Image
 Plugin URI: http://www.garee.ch/wordpress/garees-random-image/
 Description: Garee's Random Image is a wordpress plugin that displays a random image from a post-castegory of your blog. The plugin uses the template-system Mustache to achieve the best possible customization. Some templates are included. 
-Version: 0.7
+Version: 0.8
 Author: Sebastian Forster
 Author URI: http://www.garee.ch/
 License: GPL2
@@ -52,11 +52,11 @@ function garees_random_image($atts, $content = "") {
 		
 	// open template_file, submitted template or default
 	if (!is_null($template)) {
-		$tmpl = wp_remote_fopen(plugin_dir_url() . '/garees-random-image/templates/' . $template. '.html');					
+		$tmpl = wp_remote_fopen(plugin_dir_url(__FILE__) . 'templates/' . $template. '.html');					
 	} elseif ($content != "") {
 		$tmpl = $content;	
 	} else {
-		$tmpl = wp_remote_fopen(plugin_dir_url() . '/garees-random-image/templates/default.html');		
+		$tmpl = wp_remote_fopen(plugin_dir_url(__FILE__) . 'templates/default.html');		
 	}
 	
 	// prepare Mustache
@@ -164,7 +164,7 @@ function garees_random_image_head() {
 	
 		$var_sCss = plugins_url('garee_admin.css', __FILE__);
 		echo "<!-- Garee's Random Image by Sebastian Forster -->". "\n";
-		echo '<link rel="stylesheet" id="cfq-css"  href="' . $var_sCss . '" type="text/css" media="all" />'. "\n";
+		echo '<link rel="stylesheet" id="garees-random-image-admin-css"  href="' . $var_sCss . '" type="text/css" media="all" />'. "\n";
 		?>
 <script type="text/javascript">
 		/* <![CDATA[ */
@@ -241,9 +241,9 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
         if ($file != "." && $file != ".." ) {
 			$file_arr = explode(".", $file);
 			if ($file_arr[1]=="html") {
-				$template_html[$file_arr[0]] = wp_remote_fopen(plugin_dir_url() . '/garees-random-image/templates/' . $file);	
+				$template_html[$file_arr[0]] = wp_remote_fopen(plugin_dir_url(__FILE__) . 'templates/' . $file);	
 			} else if ($file_arr[1]=="css") {
-				$template_css[$file_arr[0]] = wp_remote_fopen(plugin_dir_url() . '/garees-random-image/templates/' . $file);
+				$template_css[$file_arr[0]] = wp_remote_fopen(plugin_dir_url(__FILE__) . 'templates/' . $file);
 			}
 			
         }
@@ -252,9 +252,9 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
 	
 	echo "<table><tr><th>name</th><th>html</th><th>css</th><th>description</th></tr>";
 	foreach($template_html as $key => $value)  { 
-		echo "<td>$key</td><td>yes (<a href='".plugin_dir_url()."/garees-random-image/templates/".$key.".html' target='_blank' class='tooltip'>show<span class='classic code'>".htmlspecialchars($value)."</span></a>)</td>";
+		echo "<td>$key</td><td>yes (<a href='".plugin_dir_url(__FILE__)."templates/".$key.".html' target='_blank' class='tooltip'>show<span class='classic code'>".htmlspecialchars($value)."</span></a>)</td>";
 		if ($template_css[$key])
-			echo "<td>yes (<a href='".plugin_dir_url()."/garees-random-image/templates/".$key.".css' target='_blank' class='tooltip'>show<span class='classic code'>".$template_css[$key]."</span></a>)</td>"; 
+			echo "<td>yes (<a href='".plugin_dir_url(__FILE__)."templates/".$key.".css' target='_blank' class='tooltip'>show<span class='classic code'>".$template_css[$key]."</span></a>)</td>"; 
 		else 
 			echo "<td>no</td>";	
 		
@@ -404,8 +404,8 @@ function garees_random_image_scripts_and_styles($posts){
 	if ($shortcode_found) {
 		// enqueue here
 		foreach($css_files as $css_file) {
-			if (file_exists(WP_PLUGIN_DIR . "/garees-random-image/templates/" . $css_file.".css")) {
-				wp_enqueue_style('garees-random-image-'.$css_file, plugin_dir_url()."/garees-random-image/templates/".$css_file.".css");
+			if (file_exists(plugin_dir_path(__FILE__)."templates/" . $css_file.".css")) {
+				wp_enqueue_style('garees-random-image-'.$css_file, plugin_dir_url(__FILE__).'templates/'.$css_file.".css");
 			}
 		}
 	}

@@ -56,6 +56,9 @@ Just add a text-widget to the sidebar and insert the shortcode there
 
 == Changelog ==
 
+= 0.8 =
+* bug fix "Missing argument 1 for plugin_dir_url()"
+
 = 0.7 =
 * first official release
 
