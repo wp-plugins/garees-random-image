@@ -46,7 +46,7 @@ Use shortcode-attributes to further customize the image:
 == Frequently Asked Questions ==
 
 = How do I write Mustache-Code =
-Have a look at the enclosed html-templates in the template-folder. For advanced syntax () there's the mustache(5)-manual on the [Mustache-Site](http://mustache.github.com/)
+Have a look at the enclosed html-templates in the template-folder. For advanced syntax (e.g. if-else) there's the mustache(5)-manual on the [Mustache-Site](http://mustache.github.com/)
 
 = My random images look different from the ones on the demo-page =
 This might be because your wordpress-theme's css has an influence on the output of the plugin. You might have to adjust the css-template (set margins to zero, stuff like this)
