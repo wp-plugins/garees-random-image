@@ -1,7 +1,8 @@
 div.wrapper{  
     float:left; /* important */  
     position:relative; /* important(so we can absolutely position the description div */ 
-	margin:10px;
+	margin:0px;
+	padding:0px;
 }  
 div.description{  
     position:absolute; /* absolute position (so we can position it where we want)*/  

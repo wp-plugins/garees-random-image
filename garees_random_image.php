@@ -3,7 +3,7 @@
 Plugin Name: Garee's Random Image
 Plugin URI: http://www.garee.ch/wordpress/garees-random-image/
 Description: Garee's Random Image is a wordpress plugin that displays a random image from a post-castegory of your blog. The plugin uses the template-system Mustache to achieve the best possible customization. Some templates are included. 
-Version: 0.8
+Version: 0.9
 Author: Sebastian Forster
 Author URI: http://www.garee.ch/
 License: GPL2
@@ -25,6 +25,14 @@ License: GPL2
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+if(!defined('GAREE_FLATTRSCRIPT')) {
+	define('GAREE_FLATTRSCRIPT', 'http://www.garee.ch/js/flattr/flattr.js');
+}
+if(!defined('GAREE_MUSTACHEPHP')) {
+	include_once('Mustache.php');
+	define('GAREE_MUSTACHEPHP', true);
+}
+
 /*
  * Main-Function: Get Image and render Template
  */ 
@@ -34,6 +42,8 @@ function garees_random_image($atts, $content = "") {
 	  'template' => null,
 	  'size' => 'full',
 	  'filetype' => 'jpeg',
+	  'date_format' => get_option('date_format'),
+	  'exclude' => "",
 	), $atts));
 	
 	if ($filetype == "jpg")
@@ -59,8 +69,7 @@ function garees_random_image($atts, $content = "") {
 		$tmpl = wp_remote_fopen(plugin_dir_url(__FILE__) . 'templates/default.html');		
 	}
 	
-	// prepare Mustache
-	include_once('Mustache.php');
+	// prepare mustache
 	$m = new Mustache;
 	
 	// prepare arguments for query
@@ -69,7 +78,7 @@ function garees_random_image($atts, $content = "") {
 	   'post_mime_type' => 'image/'.$filetype,
 	   'numberposts' => 1,
 	   'orderby' => 'rand',
-	   'exclude' => array(),
+	   'exclude' => explode(",", $exclude),
 	);
 	
 	// make sure no endless loop
@@ -131,8 +140,9 @@ function garees_random_image($atts, $content = "") {
 				
 		$data['post_url'] =  get_permalink($parent->ID);
 		$data['post_title'] = $parent->post_title;
-		$data['post_date'] = $parent->post_date;
-		$data['post'] = $m->render("<a href='{{post_url}}'>{{post_title}}</a>", $data);
+		$data['post_date'] =  date($date_format, strtotime($parent->post_date));
+		$data['post_author'] = get_the_author_meta('display_name',$parent->post_author);
+		$data['post'] = $m->render("<a href='{{post_url}}'>{{post_title}}</a>", $data);		
 	
 		$post_category =  get_the_category($image->post_parent);
 		
@@ -162,22 +172,17 @@ function garees_random_image_head() {
 		
 	if(is_admin()) {
 	
-		$var_sCss = plugins_url('garee_admin.css', __FILE__);
-		echo "<!-- Garee's Random Image by Sebastian Forster -->". "\n";
-		echo '<link rel="stylesheet" id="garees-random-image-admin-css"  href="' . $var_sCss . '" type="text/css" media="all" />'. "\n";
-		?>
-<script type="text/javascript">
-		/* <![CDATA[ */
-			(function() {
-				var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
-				s.type = 'text/javascript';
-				s.async = true;
-				s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
-				t.parentNode.insertBefore(s, t);
-			})();
-		/* ]]> */
-		</script>
-<?php
+		// load admin css
+		if(!defined('GAREE_ADMINCSS_IS_LOADED')) {
+			echo '<link rel="stylesheet" id="garees-admin-css"  href="' . plugins_url('garee_admin.css', __FILE__) . '" type="text/css" media="all" />'. "\n";
+			define('GAREE_ADMINCSS_IS_LOADED', true);
+		}
+				
+		// Javascript für Flattr einfügen
+		if(!defined('GAREE_FLATTRSCRIPT_IS_LOADED')) {
+			echo '<script type="text/javascript" src="' . GAREE_FLATTRSCRIPT . '"></script>';
+			define('GAREE_FLATTRSCRIPT_IS_LOADED', true);
+		}
 	}
 }
 
@@ -197,11 +202,10 @@ function garees_random_image_plugin_actions( $links, $file ){
 /*
  * Generate Description-Page for the Admin
  */
-function garees_random_image_show_menu() {
-
+function gareeBoxRandomImage() {
 ?>
 
-<div id="gareeBox"> <small>If you like my plugin, you can buy me a coffee!<br />
+<div id="gareeBox"> <small>If you like Garee's Random Image plugin, you can buy me a coffee!<br />
   </small><br />
   <a class="FlattrButton" style="display:none;" href="http://www.garee.ch/garees-random-image/"></a>
   <noscript>
@@ -209,21 +213,16 @@ function garees_random_image_show_menu() {
   </noscript>
   <br />
   or<br />
-  <a href="https://flattr.com/donation/give/to/garee" title="Donate (via Flattr)" id="flattrDonate" target="_blank"></a>
-<div id="fb-root"></div>
-<br /><br />
-<script>(function(d, s, id) {
-  var js, fjs = d.getElementsByTagName(s)[0];
-  if (d.getElementById(id)) {return;}
-  js = d.createElement(s); js.id = id;
-  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=143735749031431";
-  fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));</script>
-<div class="fb-like" data-href="http://www.garee.ch/wordpress/garees-random-image/" data-send="false" data-layout="box_count" data-width="38" data-show-faces="false" data-font="lucida grande"></div>  
-<br /><br />
-  <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.garee.ch/wordpress/garees-random-image/" data-text="Garee's Random Image" data-count="vertical" data-via="garee76">Tweet</a><script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
-  </div>
+  <a href="https://flattr.com/donation/give/to/garee" title="Donate (via Flattr)" id="flattrDonate" target="_blank"></a> </div>
+<?php
+}
 
+/*
+ * Generate Description-Page for the Admin
+ */
+function garees_random_image_show_menu() {
+	gareeBoxRandomImage();
+?>
 <div id='gareeMain'>
   <h1>Garee's Random Image </h1>
   <p>Just insert the following shortcode anywhere in your blog (for use in a widget: use the text-widget and insert the shortcode there) </p>
@@ -270,11 +269,11 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
 
 ?>
     </dd>
-  <dd> If the template-attribute is missing you have to define a template yourself (*). This can be done using the following enclosing shortcut:</dd></dl>
-      <pre>[random_image_template]*[/random_image_template]</pre>
-    <dl>
+    <dd> If the template-attribute is missing you have to define a template yourself (*). This can be done using the following enclosing shortcut:</dd>
+  </dl>
+  <pre>[random_image_template]*[/random_image_template]</pre>
+  <dl>
     <dd> Check out the examples below to see how to define your own template. </dd>
-
     <dt>category</dt>
     <dd> a number indicating the ID auf the category for your random image. The category will be the post-category where your image is published! When left blank a random image is chosen.</dd>
     <dd>Your categories and the corresponding IDs (reload this page to update):</dd>
@@ -296,9 +295,13 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
     <dd> Either 'full', 'large', 'medium', 'thumbnail' or something like '300,200' to get an image that fits in a box  with a width of 300px and a height of 200px. This picture can be used by the template. If left blank, 'full' will be chosen.</dd>
     <dt>filetype</dt>
     <dd> Either 'jpeg', 'gif', 'png' or 'any'. Restricts the search to this filetype. If left blank, 'jpeg' will be chosen.</dd>
+     <dt>date_format</dt>
+    <dd> Choose the format for the Mustache-tag {{post_date}}. For more information check out the syntax of <a href="http://php.net/manual/en/function.date.php" target="_blank">PHP-Date-function</a>'s format-parameter.<span class="version">(v0.9+)</span></dd>
+    <dt>exclude</dt>
+    <dd>Enter comma-separated IDs of images that need to be excluded from random selection.<span class="version">(v0.9+)</span></dd>
   </dl>
   <h2>Some Examples</h2>
-  <p>The following examples are shown on my plugin-site:  <a href="http://www.garee.ch/wordpress/garees-random-image/live-demo/" target="_blank">Live-Demo</a></p>
+  <p>The following examples are shown on my plugin-site: <a href="http://www.garee.ch/wordpress/garees-random-image/live-demo/" target="_blank">Live-Demo</a></p>
   <p>Show a random image:</p>
   <pre>[random_image]</pre>
   <p>Show a medium-sized random image from category 7 using the  &quot;scrapbook&quot;-template:</p>
@@ -310,12 +313,15 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
   <pre>[random_image template='rounded' style='2' category='12' size='60,60']</pre>
   <p>Show a random image from any category in full resolution and add the title of the post with a link to the post itself:</p>
   <pre>[random_image]{{{image}}}&lt;br /&gt;{{{post}}}[/random_image]</pre>
-  <p>Show a random image from any category using the &quot;polaroid&quot;-template. Use the template's custom attributes to change the font-size and the width of the image:  </p>
+  <p>Show a random image from any category using the &quot;polaroid&quot;-template. Use the template's custom attributes to change the font-size and the width of the image: </p>
   <pre>[random_image template='polaroid' polaroid_font_size='14px' polaroid_width='360px']
 </pre>
-  <h2>Template-Files</h2>
+  <p>Show a random image from any category using the &quot;caption&quot;-template. Use the new shortcode-option &quot;date_format&quot; to define a custom date-format: </p>
+  <pre>[random_image template='caption' date_format='D, d M Y' size='large']
+  </pre>
+<h2>Template-Files</h2>
   <p>A couple of templates come with the plugin. You can write and install additional templates yourself.  A template consists of a html-file with the Mustache-template and (optionally) a css-file with the same filename as the html-file. If your css-code has images, put them in a subfolder of the templates-folder named after your plugin. Then upload all files via FTP and insert the shortcode for your template. If you define your template directly in the shortcode, you cannot link to a additional css-file. Of course you can include css-styling directly into the html-template.</p>
-<h2>Mustache-Templates</h2>
+  <h2>Mustache-Templates</h2>
   <p>The following components can be used to build your own html-template. Additional components can be generated by inserting custom attributes in the shortcode. The components are only available in the html-template, not in the css-file!  Check out the template-files in the plugin to see how it's still possible to change css-values with custom attributes from your shortcode. For more infos about Mustache-syntax check out the PHP-implementation and the manuals on <a href="http://mustache.github.com/" target="_blank">http://mustache.github.com/</a></p>
   <dl class='mustache_list'>
     <dt>{{image_title}}</dt>
@@ -377,13 +383,17 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
     <dt>{{post_title}}</dt>
     <dd>title of the post the image is attached to</dd>
     <dt>{{post_date}}</dt>
-    <dd>date of the post the image is attached to</dd>
+    <dd>date of the post the image is attached to (formatted with the date_format-option or automatically if option missing)</dd>
+    <dt>{{post_author}}</dt>
+    <dd>name of the author who wrote the post which the image is attached to <span class="version">(v0.9+)</span></dd>
   </dl>
 </div>
 <?php
 }
 
 add_filter('the_posts', 'garees_random_image_scripts_and_styles'); // the_posts gets triggered before wp_head
+add_filter('widget_text', 'garees_random_image_scripts_and_styles_widget'); // try to load css if shortcode in text-widget
+
 
 /*
  * Find shortcode and extract css-filename to enqueue the correct stylesheet
@@ -395,8 +405,8 @@ function garees_random_image_scripts_and_styles($posts){
 	$css_file = null;
 	foreach ($posts as $post) {
 		if (preg_match_all("/\[random_image[0-9a-z =']* template=['\"]{0,1}([0-9a-z _]*)['\" \]]/", $post->post_content, $matches, PREG_PATTERN_ORDER) > 0) {	
-			$shortcode_found = true; // bingo!
-			$css_files = $matches[1];
+			$shortcode_found = true; // bingo!   !!! Findet nur in der ersten Post (var wird überschrieben, man müsste push machen) !!!!!
+			$css_files = $matches[1]; 
 			//break;
 		}
 	}
@@ -411,6 +421,32 @@ function garees_random_image_scripts_and_styles($posts){
 	}
  
 	return $posts;
+}
+
+/*
+ * Find shortcode and extract css-filename to enqueue the correct stylesheet if in text-widget!
+ */    
+function garees_random_image_scripts_and_styles_widget($text) {
+ 
+	$css_file = null;
+	if (preg_match_all("/\[random_image[0-9a-z =']* template=['\"]{0,1}([0-9a-z _]*)['\" \]]/", $text, $matches, PREG_PATTERN_ORDER) > 0) {	
+		$shortcode_found = true; // bingo!   !!! Findet nur in der ersten Post (var wird überschrieben, man müsste push machen) !!!!!
+		$css_files = $matches[1]; 
+	}
+	if ($shortcode_found) {
+		// enqueue here
+		foreach($css_files as $css_file) {
+			if (file_exists(plugin_dir_path(__FILE__)."templates/" . $css_file.".css")) {
+				$text .= '<link rel="stylesheet" id="garees-random-image-'.$css_file.'"  href="' . plugin_dir_url(__FILE__) . 'templates/'.$css_file . '.css" type="text/css" media="all" />'. "\n";
+				//wp_enqueue_style('garees-random-image-'.$css_file, plugin_dir_url(__FILE__).'templates/'.$css_file.".css");
+			}
+		}
+	}
+	
+	//wp_enqueue geht hier nicht mehr -> muss wohl css laden und in html direkt ausgeben oder mit js laden!
+	// noch besser: random image widget
+ 	//wp_enqueue_style('garees-random-image-test', plugin_dir_url(__FILE__).'templates/test.css');
+	return $text;
 }
 
 // add shortcuts

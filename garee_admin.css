@@ -2,12 +2,19 @@
 #gareeMain {
 	margin-right:220px;
 }
+#gareeMain .version {
+	color:#999999;
+	font-size:9px;	
+}
 #gareeMain table {
 	border: 1px #ccc solid;
 	-webkit-border-radius: 0.5em;
 	-moz-border-radius: 0.5em;
 	border-radius: 0.5em;
 	margin-right:10px;
+}
+#gareeMain .form-table {
+	clear:none;
 }
 #gareeMain td, #gareeMain th {
 	padding:10px;

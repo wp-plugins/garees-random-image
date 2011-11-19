@@ -56,8 +56,15 @@ Just add a text-widget to the sidebar and insert the shortcode there
 
 == Changelog ==
 
+= 0.9 =
+* FIX: detect shortcode in text-widget and load css (if template uses css)
+* new Mustache-tag: 'post_author'
+* new shortcode-attributes 'date_format' and 'exclude'
+* {{post_date}} formatted automatically if 'date_format'-option missing
+* minior changes to template 'caption'
+
 = 0.8 =
-* bug fix "Missing argument 1 for plugin_dir_url()"
+* FIX: "Missing argument 1 for plugin_dir_url()"
 
 = 0.7 =
 * first official release
@@ -80,9 +87,13 @@ Just add a text-widget to the sidebar and insert the shortcode there
 
 == Upgrade Notice ==
 
+= 0.9 =
+If you used the template 'caption': be shure to check it, there were some modifications made
+
 == Coming soon ==
 
 Here's what's planned for future releases:
 
+* random-image-widget: better ways to control css-loading than if you insert the shortcode into a text-widget
 * exif-extension: inlcude date/time, coordinates, shutter-speed, ...
 * ... 
