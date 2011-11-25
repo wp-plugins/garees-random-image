@@ -3,7 +3,7 @@
 Plugin Name: Garee's Random Image
 Plugin URI: http://www.garee.ch/wordpress/garees-random-image/
 Description: Garee's Random Image is a wordpress plugin that displays a random image from a post-castegory of your blog. The plugin uses the template-system Mustache to achieve the best possible customization. Some templates are included. 
-Version: 0.9
+Version: 1.0
 Author: Sebastian Forster
 Author URI: http://www.garee.ch/
 License: GPL2
@@ -44,8 +44,12 @@ function garees_random_image($atts, $content = "") {
 	  'filetype' => 'jpeg',
 	  'date_format' => get_option('date_format'),
 	  'exclude' => "",
+	  'window_image' => false,
+	  'window_post' => false,
 	), $atts));
 	
+	$categories = explode(",", $category);
+
 	if ($filetype == "jpg")
 		$filetype = "jpeg";
 		
@@ -54,6 +58,24 @@ function garees_random_image($atts, $content = "") {
 	
 	// copy shortcode attributes to the data-array
 	$data = $atts;
+	
+	// should we open a new window?
+	if (in_array($window_image, array("true", "1", "t"), true)) {
+		$window_image = true;
+		$data['window_image'] = true;
+	} else {
+		$window_image = false;
+		$data['window_image'] = false;
+	}
+
+	if (in_array($window_post, array("true", "1", "t"), true)) {
+		$window_post = true;
+		$data['window_post'] = true;
+	} else {
+		$window_post = false;
+		$data['window_post'] = false;
+	}
+
 	
 	// split size, if in pixels
 	if (strstr($size, ",")) {
@@ -111,52 +133,59 @@ function garees_random_image($atts, $content = "") {
 		$data['image_url'] = $image_attributes[0];
 		$data['image_width'] = $image_attributes[1];
 		$data['image_height'] = $image_attributes[2];
-		$data['image_size'] = $m->render("width={{image_width}} height={{image_height}}", $data);
-		$data['image'] = $m->render("<img src='{{image_url}}' alt='{{image_title}}' title='{{image_title}}' {{image_size}} />" ,$data);	
-		
+		$data['image_size'] = $m->render('width={{image_width}} height={{image_height}}', $data);
+		$data['image'] = $m->render('<img src="{{image_url}}" alt="{{image_title}}" title="{{image_title}}" {{image_size}} />' ,$data);	
+
 		$data['full_image_url'] = $image_full_attributes[0];
 		$data['full_image_width'] = $image_full_attributes[1];
 		$data['full_image_height'] = $image_full_attributes[2];
-		$data['full_image_size'] = $m->render("width={{full_image_width}} height={{full_image_height}}", $data);
-		$data['full_image'] = $m->render("<img src='{{full_image_url}}' alt='{{image_title}}' title='{{image_title}}' {{full_image_size}} />" ,$data);
-	
+		$data['full_image_size'] = $m->render('width={{full_image_width}} height={{full_image_height}}', $data);
+		$data['full_image'] = $m->render('<img src="{{full_image_url}}" alt="{{image_title}}" title="{{image_title}}" {{full_image_size}} />' ,$data);	
+			
 		$data['large_image_url'] = $image_large_attributes[0];
 		$data['large_image_width'] = $image_large_attributes[1];
 		$data['large_image_height'] = $image_large_attributes[2];
-		$data['large_image_size'] = $m->render("width={{large_image_width}} height={{large_image_height}}", $data);
-		$data['large_image'] = $m->render("<img src='{{large_image_url}}' alt='{{image_title}}' title='{{image_title}}' {{large_image_size}} />" ,$data);			
+		$data['large_image_size'] = $m->render('width={{large_image_width}} height={{large_image_height}}', $data);
+		$data['large_image'] = $m->render('<img src="{{large_image_url}}" alt="{{image_title}}" title="{{image_title}}" {{large_image_size}} />' ,$data);	
 	
 		$data['medium_image_url'] = $image_medium_attributes[0];
 		$data['medium_image_width'] = $image_medium_attributes[1];
 		$data['medium_image_height'] = $image_medium_attributes[2];
-		$data['medium_image_size'] = $m->render("width={{medium_image_width}} height={{medium_image_height}}", $data);
-		$data['medium_image'] = $m->render("<img src='{{medium_image_url}}' alt='{{image_title}}' title='{{image_title}}' {{medium_image_size}} />" ,$data);
+		$data['medium_image_size'] = $m->render('width={{medium_image_width}} height={{medium_image_height}}', $data);
+		$data['medium_image'] = $m->render('<img src="{{medium_image_url}}" alt="{{image_title}}" title="{{image_title}}" {{medium_image_size}} />' ,$data);	
 			
 		$data['thumbnail_url'] = $thumbnail_attributes[0];	
 		$data['thumbnail_width'] = $thumbnail_attributes[1];
 		$data['thumbnail_height'] = $thumbnail_attributes[2];
-		$data['thumbnail_size'] = $m->render("width={{thumbnail_width}} height={{thumbnail_height}}", $data);
-		$data['thumbnail'] = $m->render("<img src='{{thumbnail_url}}' alt='{{image_title}}' title='{{image_title}}' {{thumbnail_size}} />" ,$data);			
+		$data['thumbnail_size'] = $m->render('width={{thumbnail_width}} height={{thumbnail_height}}', $data);
+		$data['thumbnail'] = $m->render('<img src="{{thumbnail_url}}" alt="{{image_title}}" title="{{image_title}}" {{thumbnail_size}} />' ,$data);	
 				
 		$data['post_url'] =  get_permalink($parent->ID);
 		$data['post_title'] = $parent->post_title;
 		$data['post_date'] =  date($date_format, strtotime($parent->post_date));
 		$data['post_author'] = get_the_author_meta('display_name',$parent->post_author);
-		$data['post'] = $m->render("<a href='{{post_url}}'>{{post_title}}</a>", $data);		
+		if ($window_post)
+			$data['post'] = $m->render('<a href="{{post_url}}" target="_blank">{{post_title}}</a>', $data);		
+		else 
+			$data['post'] = $m->render('<a href="{{post_url}}">{{post_title}}</a>', $data);		
 	
 		$post_category =  get_the_category($image->post_parent);
 		
 		$count++;
 		if ($count >=  100)
-			return "<span style='color:#cc0000'>Timeout!</span>";	
+			return garees_random_image_error("No image found! (please check your category)");	
 		
-	} while ($post_category[0]->cat_ID!=$category && $category!=null);
+	} while ($category!=null && !in_array($post_category[0]->cat_ID, $categories));
 	
 	// render the template						
 	return $m->render($tmpl, $data);	
 	
 }
 
+
+function garees_random_image_error($msg) {
+	return "<span style='color:red'>Garee's Random Image Error : ".$msg."</span>";
+}
 
 /*
  * Register the Plugin-Description-Page
@@ -276,6 +305,7 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
     <dd> Check out the examples below to see how to define your own template. </dd>
     <dt>category</dt>
     <dd> a number indicating the ID auf the category for your random image. The category will be the post-category where your image is published! When left blank a random image is chosen.</dd>
+    <dd>It's also possible to submit more than one category by separating them via comma (e.g. category=&quot;3,4&quot;) <span class="version">(v1.0+)</span></dd>
     <dd>Your categories and the corresponding IDs (reload this page to update):</dd>
     <dd>
       <?php
@@ -292,35 +322,40 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
 ?>
     </dd>
     <dt>size</dt>
-    <dd> Either 'full', 'large', 'medium', 'thumbnail' or something like '300,200' to get an image that fits in a box  with a width of 300px and a height of 200px. This picture can be used by the template. If left blank, 'full' will be chosen.</dd>
+    <dd> Either 'full', 'large', 'medium', 'thumbnail' or something like '300,200' to get an image that fits in a box  with a width of 300px and a height of 200px. This picture can be used by the template. If left blank, 'full' will be chosen. <span class="version">(v0.5+)</span></dd>
     <dt>filetype</dt>
-    <dd> Either 'jpeg', 'gif', 'png' or 'any'. Restricts the search to this filetype. If left blank, 'jpeg' will be chosen.</dd>
+    <dd> Either 'jpeg', 'gif', 'png' or 'any'. Restricts the search to this filetype. If left blank, 'jpeg' will be chosen. <span class="version">(v0.5+)</span></dd>
      <dt>date_format</dt>
     <dd> Choose the format for the Mustache-tag {{post_date}}. For more information check out the syntax of <a href="http://php.net/manual/en/function.date.php" target="_blank">PHP-Date-function</a>'s format-parameter.<span class="version">(v0.9+)</span></dd>
     <dt>exclude</dt>
-    <dd>Enter comma-separated IDs of images that need to be excluded from random selection.<span class="version">(v0.9+)</span></dd>
+    <dd>Enter comma-separated IDs of images that need to be excluded from random selection. <span class="version">(v0.9+)</span></dd>
+    <dt>window_image</dt>
+    <dd>When set to "true", "t" or 1 a link to an image opens a new windows/tab. <span class="version">(v1.0+)</span></dd>
+	<dt>window_post</dt>
+    <dd>When set to "true", "t" or 1 a link to a post opens a new windows/tab. <span class="version">(v1.0+)</span></dd>    
   </dl>
   <h2>Some Examples</h2>
   <p>The following examples are shown on my plugin-site: <a href="http://www.garee.ch/wordpress/garees-random-image/live-demo/" target="_blank">Live-Demo</a></p>
   <p>Show a random image:</p>
   <pre>[random_image]</pre>
+    <p>Show a random image, but set size to "medium" and tell both image- and post-link to open a new window:</p>
+  <pre>[random_image size="medium" window_image=1 window_post=1]</pre>
   <p>Show a medium-sized random image from category 7 using the  &quot;scrapbook&quot;-template:</p>
-  <pre>[random_image template='scrapbook' category='7' size='medium']</pre>
+  <pre>[random_image template=&quot;scrapbook&quot; category=&quot;7&quot; size=&quot;medium&quot;]</pre>
   <p>Show a random thumbnail from category 12 using the &quot;rounded&quot;-template:</p>
-  <pre>[random_image template='rounded' category='12' size='thumbnail']
+  <pre>[random_image template=&quot;rounded&quot; category=&quot;12&quot; size=&quot;thumbnail&quot;]
 </pre>
-  <p>Use the custom-attribute 'style' of the template to choose the second style for the rounded image and make it smaller:</p>
-  <pre>[random_image template='rounded' style='2' category='12' size='60,60']</pre>
+  <p>Use the custom-attribute &quot;style&quot; of the template to choose the second style for the rounded image and make it smaller:</p>
+  <pre>[random_image template=&quot;rounded&quot; style=&quot;2&quot; category=&quot;12&quot; size=&quot;60,60&quot;]</pre>
   <p>Show a random image from any category in full resolution and add the title of the post with a link to the post itself:</p>
   <pre>[random_image]{{{image}}}&lt;br /&gt;{{{post}}}[/random_image]</pre>
-  <p>Show a random image from any category using the &quot;polaroid&quot;-template. Use the template's custom attributes to change the font-size and the width of the image: </p>
-  <pre>[random_image template='polaroid' polaroid_font_size='14px' polaroid_width='360px']
+  <p>Show a random image from any category using the &quot;polaroid&quot;-template. Use the template&quot;s custom attributes to change the font-size and the width of the image: </p>
+  <pre>[random_image template=&quot;polaroid&quot; polaroid_font_size=&quot;14px&quot; polaroid_width=&quot;360px&quot;]
 </pre>
   <p>Show a random image from any category using the &quot;caption&quot;-template. Use the new shortcode-option &quot;date_format&quot; to define a custom date-format: </p>
-  <pre>[random_image template='caption' date_format='D, d M Y' size='large']
-  </pre>
+  <pre>[random_image template=&quot;caption&quot; date_format=&quot;D, d M Y&quot; size=&quot;large&quot;]</pre>
 <h2>Template-Files</h2>
-  <p>A couple of templates come with the plugin. You can write and install additional templates yourself.  A template consists of a html-file with the Mustache-template and (optionally) a css-file with the same filename as the html-file. If your css-code has images, put them in a subfolder of the templates-folder named after your plugin. Then upload all files via FTP and insert the shortcode for your template. If you define your template directly in the shortcode, you cannot link to a additional css-file. Of course you can include css-styling directly into the html-template.</p>
+  <p>A couple of templates come with the plugin. You can write and install additional templates yourself.  A template consists of a html-file with the Mustache-template and (optionally) a css-file with the same filename as the html-file. If your css-code has images, put them in a subfolder of the templates-folder named after your template. Then upload all files via FTP and insert the shortcode for your template. If you define your template directly in the shortcode, you cannot link to a additional css-file. Of course you can include css-styling directly into the html-template.</p>
   <h2>Mustache-Templates</h2>
   <p>The following components can be used to build your own html-template. Additional components can be generated by inserting custom attributes in the shortcode. The components are only available in the html-template, not in the css-file!  Check out the template-files in the plugin to see how it's still possible to change css-values with custom attributes from your shortcode. For more infos about Mustache-syntax check out the PHP-implementation and the manuals on <a href="http://mustache.github.com/" target="_blank">http://mustache.github.com/</a></p>
   <dl class='mustache_list'>
@@ -386,6 +421,10 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
     <dd>date of the post the image is attached to (formatted with the date_format-option or automatically if option missing)</dd>
     <dt>{{post_author}}</dt>
     <dd>name of the author who wrote the post which the image is attached to <span class="version">(v0.9+)</span></dd>
+    <dt>{{window_image}}</dt>
+    <dd>indicates if a link to the image should be opened in a new window. <span class="version">(v1.0+)</span></dd>
+    <dt>{{window_post}}</dt>
+    <dd>indicates if a link to the corresponding post should be opened in a new window. <span class="version">(v1.0+)</span></dd>
   </dl>
 </div>
 <?php
@@ -394,6 +433,8 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
 add_filter('the_posts', 'garees_random_image_scripts_and_styles'); // the_posts gets triggered before wp_head
 add_filter('widget_text', 'garees_random_image_scripts_and_styles_widget'); // try to load css if shortcode in text-widget
 
+if (!is_admin())                                   // make sure shortcode is done in the widget
+  add_filter('widget_text', 'do_shortcode', 11);   // http://hackadelic.com/the-right-way-to-shortcodize-wordpress-widgets
 
 /*
  * Find shortcode and extract css-filename to enqueue the correct stylesheet
@@ -427,7 +468,8 @@ function garees_random_image_scripts_and_styles($posts){
  * Find shortcode and extract css-filename to enqueue the correct stylesheet if in text-widget!
  */    
 function garees_random_image_scripts_and_styles_widget($text) {
- 
+	
+	$shortcode_found = false;
 	$css_file = null;
 	if (preg_match_all("/\[random_image[0-9a-z =']* template=['\"]{0,1}([0-9a-z _]*)['\" \]]/", $text, $matches, PREG_PATTERN_ORDER) > 0) {	
 		$shortcode_found = true; // bingo!   !!! Findet nur in der ersten Post (var wird überschrieben, man müsste push machen) !!!!!

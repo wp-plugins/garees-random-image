@@ -1,5 +1,5 @@
 {{! image with frame as described in http://www.zurb.com/playground/css3-polaroids/ (uses CSS3, may not work in all browsers!) uses custom-attributes for further configuration: polaroid_font_size and polaroid_width }}
 
 <ul class="polaroids">
-  <li><a href="{{post_url}}" title="{{image_title}}" {{#polaroid_font_size}}style="font-size:{{polaroid_font_size}}"{{/polaroid_font_size}} ><img src="{{image_url}}" alt="{{image_title}}" {{#polaroid_width}}style="width:{{polaroid_width}}"{{/polaroid_width}} /></a></li>
+  <li><a href="{{post_url}}" title="{{image_title}}" {{#window_post}}target="_blank" {{/window_post}} {{#polaroid_font_size}}style="font-size:{{polaroid_font_size}}"{{/polaroid_font_size}} ><img src="{{image_url}}" alt="{{image_title}}" {{#polaroid_width}}style="width:{{polaroid_width}}"{{/polaroid_width}} /></a></li>
 </ul>

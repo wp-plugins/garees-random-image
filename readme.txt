@@ -56,12 +56,18 @@ Just add a text-widget to the sidebar and insert the shortcode there
 
 == Changelog ==
 
+= 1.0 =
+* FIX: some themes don't run shortcode in the text-widget
+* allow comma-separated categories as shortcode-option
+* new shortcode-attributes 'window_image' and 'window_post' to control whether links should open a new window
+* new corresponding Mustache-tags: {{window_image}} and {{window_post}}
+
 = 0.9 =
 * FIX: detect shortcode in text-widget and load css (if template uses css)
 * new Mustache-tag: 'post_author'
 * new shortcode-attributes 'date_format' and 'exclude'
 * {{post_date}} formatted automatically if 'date_format'-option missing
-* minior changes to template 'caption'
+* minor changes to template 'caption'
 
 = 0.8 =
 * FIX: "Missing argument 1 for plugin_dir_url()"
