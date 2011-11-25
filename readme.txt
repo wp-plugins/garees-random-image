@@ -54,6 +54,10 @@ This might be because your wordpress-theme's css has an influence on the output 
 = I would like to add the random image as a widget on the sidebar =
 Just add a text-widget to the sidebar and insert the shortcode there
 
+= I get always the same images =
+Check if you have a cache-plugin running. If the page is cached, there won't be any random images on reload!
+
+
 == Changelog ==
 
 = 1.0 =
