@@ -60,6 +60,11 @@ Check if you have a cache-plugin running. If the page is cached, there won't be 
 
 == Changelog ==
 
+= 1.1 =
+* faster algorithm to find a random image of a certain category
+* if algorithm times out, make sure that an almost random image of the category is shown
+* check if there are any images associated with a certain post-category (on the admin-page)
+
 = 1.0 =
 * FIX: some themes don't run shortcode in the text-widget
 * allow comma-separated categories as shortcode-option

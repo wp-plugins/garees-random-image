@@ -3,7 +3,7 @@
 Plugin Name: Garee's Random Image
 Plugin URI: http://www.garee.ch/wordpress/garees-random-image/
 Description: Garee's Random Image is a wordpress plugin that displays a random image from a post-castegory of your blog. The plugin uses the template-system Mustache to achieve the best possible customization. Some templates are included. 
-Version: 1.0
+Version: 1.1
 Author: Sebastian Forster
 Author URI: http://www.garee.ch/
 License: GPL2
@@ -49,6 +49,9 @@ function garees_random_image($atts, $content = "") {
 	), $atts));
 	
 	$categories = explode(",", $category);
+	
+	$dbqueries_max = 10;   // try 10 times to query db
+	$images_max = 3;       // get 3 pictures in each try
 
 	if ($filetype == "jpg")
 		$filetype = "jpeg";
@@ -93,30 +96,116 @@ function garees_random_image($atts, $content = "") {
 	
 	// prepare mustache
 	$m = new Mustache;
+	$image = null;
+	$image_found = false;
+	$error = "";
 	
-	// prepare arguments for query
-	$args = array(
-	   'post_type' => 'attachment',
-	   'post_mime_type' => 'image/'.$filetype,
-	   'numberposts' => 1,
-	   'orderby' => 'rand',
-	   'exclude' => explode(",", $exclude),
-	);
-	
-	// make sure no endless loop
-	$count = 0;
-	
-	do { 
-
+	// no categories: just get one random image
+	if ($category == null) {
+		// prepare arguments for query
+		$args = array(
+		   'post_type' => 'attachment',
+		   'post_mime_type' => 'image/'.$filetype,
+		   'numberposts' => 1,
+		   'orderby' => 'rand',
+		   'exclude' => explode(",", $exclude),
+		);
 		// get post
 		$images = get_posts($args);
+		$no_images = count($images);
+			
+		if ($no_images > 0) {	
+			// get image
+			$image = $images[0];
+			$image_found = true;
+		} else {
+			$error = "There are no published images";
+		}
 		
-		// get image
-		$image = $images[0];		
-
-		// make shure this image is excluded next search
-		array_push($args['exclude'], $image->ID);
+	} else {
 		
+		// prepare arguments for query
+		$args = array(
+		   'post_type' => 'attachment',
+		   'post_mime_type' => 'image/'.$filetype,
+		   'numberposts' => $images_max,
+		   'orderby' => 'rand',
+		   'exclude' => explode(",", $exclude),
+		);
+		
+		// make sure no endless loop
+		$dbqueries_count = 0;
+		
+		// categories: real random image
+		do { 
+	
+			// get post
+			$images = get_posts($args);
+			$no_images = count($images);
+				
+			if ($no_images > 0) {	
+				
+				foreach ($images as $current_image) {	
+					// make shure this image is excluded next search
+					array_push($args['exclude'], $current_image->ID);	
+					
+					$post_category =  get_the_category($current_image->post_parent);
+					if (in_array($post_category[0]->cat_ID, $categories)) {
+						$image = $current_image;
+						$image_found = true;
+						break;	
+					} 
+					
+				} // end foreach
+				$dbqueries_count++;
+			} // end if $no_image > 0
+			
+		} while ( !($image_found) && ($dbqueries_count <  $dbqueries_max) );
+		
+		// categories: failback if not found in time
+		if ( !($image_found) )  {
+			
+			$args_posts = array(
+			   'post_type' => 'post',		   
+			   'category' => $category,
+			   'numberposts' => -1,
+			   'post_status' => 'publish',
+			   'orderby' => 'rand',
+			);
+			
+			$posts = get_posts($args_posts);
+			$no_posts = count($posts);
+			
+			foreach ($posts as $post) {	
+				
+				$args = array(
+				   'post_type' => 'attachment',
+				   'post_mime_type' => 'image/'.$filetype,
+				   'numberposts' => 1,
+				   'orderby' => 'rand',
+				   'post_status' => null,
+				   'post_parent' => $post->ID,
+				);		
+			
+				// get post
+				$images = get_posts($args);
+				$no_images = count($images);
+					
+				if ($no_images > 0) {
+					$image = $images[0];
+					$image_found = true;
+					break;
+				}
+	
+			}
+			if ( !($image_found)) {
+				$error = "No image found! (please check your category)";
+			}
+		}
+		
+	}
+	
+	if ($image_found) {
 		// get parent post
 		$parent = get_post($image->post_parent);
 		
@@ -135,7 +224,7 @@ function garees_random_image($atts, $content = "") {
 		$data['image_height'] = $image_attributes[2];
 		$data['image_size'] = $m->render('width={{image_width}} height={{image_height}}', $data);
 		$data['image'] = $m->render('<img src="{{image_url}}" alt="{{image_title}}" title="{{image_title}}" {{image_size}} />' ,$data);	
-
+	
 		$data['full_image_url'] = $image_full_attributes[0];
 		$data['full_image_width'] = $image_full_attributes[1];
 		$data['full_image_height'] = $image_full_attributes[2];
@@ -169,16 +258,12 @@ function garees_random_image($atts, $content = "") {
 		else 
 			$data['post'] = $m->render('<a href="{{post_url}}">{{post_title}}</a>', $data);		
 	
-		$post_category =  get_the_category($image->post_parent);
-		
-		$count++;
-		if ($count >=  100)
-			return garees_random_image_error("No image found! (please check your category)");	
-		
-	} while ($category!=null && !in_array($post_category[0]->cat_ID, $categories));
-	
-	// render the template						
-	return $m->render($tmpl, $data);	
+			
+		// render the template						
+		return $m->render($tmpl, $data);	
+	} else {
+		return garees_random_image_error($error);		
+	}
 	
 }
 
@@ -207,12 +292,24 @@ function garees_random_image_head() {
 			define('GAREE_ADMINCSS_IS_LOADED', true);
 		}
 				
-		// Javascript für Flattr einfügen
+		// load flattr js
 		if(!defined('GAREE_FLATTRSCRIPT_IS_LOADED')) {
-			echo '<script type="text/javascript" src="' . GAREE_FLATTRSCRIPT . '"></script>';
+			echo '<script type="text/javascript" src="' . GAREE_FLATTRSCRIPT . '"></script>\n';
 			define('GAREE_FLATTRSCRIPT_IS_LOADED', true);
-		}
+		}				
+		
 	}
+}
+
+/*
+ * Include CSS- and JS-File in the header (thickbox)
+ */ 
+function garees_random_image_enqueue() {
+	// activate thickbox
+	if( $_GET['page'] != "garees_random_image" )
+        return;
+	wp_enqueue_script( 'thickbox', get_option('home').'/wp-includes/js/thickbox/thickbox.js', array ('thickbox'), '3.1-20080430' );
+	echo "<link rel='stylesheet' href='".get_option('home')."/wp-includes/js/thickbox/thickbox.css?ver=20080613' type='text/css' media='all' />\n";
 }
 
 /*
@@ -318,12 +415,13 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
     <dd>
       <?php
 	$categories = get_categories( );
-	echo "<table><tr><th>name</th><th>ID</th><th>count</th></tr>";
+	echo "<table><tr><th>name</th><th>ID</th><th>count</th><th>images</th></tr>";
 	foreach($categories as $category) {
 		echo "<tr>";
 		echo "<td>".$category->name."</td>";
 		echo "<td>".$category->cat_ID."</td>";
 		echo "<td>".$category->count."</td>";
+		echo "<td><a href='".plugin_dir_url(__FILE__)."garees_random_image_category_check.php?category=".$category->cat_ID."&type=image&TB_iframe=true' class='thickbox' title='Images of ".$category->name."'>show</a></td>";
 		echo "</tr>";
 	}
 	echo "</table>";
@@ -439,7 +537,7 @@ if ($handle = opendir(plugin_dir_path(__FILE__) . "templates")) {
 }
 
 add_filter('the_posts', 'garees_random_image_scripts_and_styles'); // the_posts gets triggered before wp_head
-add_filter('widget_text', 'garees_random_image_scripts_and_styles_widget'); // try to load css if shortcode in text-widget
+add_filter('widget_text', 'garees_random_image_scripts_and_styles_widget'); // load css if shortcode is found in text-widget
 
 if (!is_admin())                                   // make sure shortcode is done in the widget
   add_filter('widget_text', 'do_shortcode', 11);   // http://hackadelic.com/the-right-way-to-shortcodize-wordpress-widgets
@@ -507,6 +605,7 @@ add_shortcode( 'random_image_template', 'garees_random_image' );
 if(is_admin()) {
 	add_action('admin_menu', 'garees_random_image_plugin_menu');
 	add_action('admin_head', 'garees_random_image_head');
-	add_action('plugin_action_links','garees_random_image_plugin_actions',10, 2);
+	add_action('plugin_action_links', 'garees_random_image_plugin_actions',10, 2);
+	add_action('admin_enqueue_scripts', 'garees_random_image_enqueue');
 }
 ?>
