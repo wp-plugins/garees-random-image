@@ -3,8 +3,14 @@
 	margin-right:220px;
 }
 #gareeMain .version {
-	color:#999999;
+	color:#999;
 	font-size:9px;	
+}
+#gareeMain .using {
+	color:#666;
+	white-space:pre;
+	width:auto !important;
+	font-family: "Consolas", "Lucida Console", Monaco, monospace !important;	
 }
 #gareeMain table {
 	border: 1px #ccc solid;
@@ -43,9 +49,9 @@
 	font-weight: bold;
 	color: green;
 }
-#gareeMain dt:after {
+/*#gareeMain dt:after {
 	content: ":";
-}
+}*/
 #gareeMain dd {
 	margin: 0 0 0 110px;
 	padding: 0 0 0.5em 0;

@@ -1,5 +1,5 @@
-{{! rounded image as described in http://webdesignerwall.com/tutorials/css3-rounded-image-with-jquery, uses custom attribut 'style' to choose between two designs (possible values for style: 1 or 2) }}
+{{! rounded image as described in http://webdesignerwall.com/tutorials/css3-rounded-image-with-jquery, uses custom option 'style' to choose between two designs (possible values for style: 1 or 2) and custom option 'float' (possible values for float: 'left' and 'right') to control text-flow}}
 
-<span class='rounded-img{{#style}}{{style}}{{/style}}' style='background:url({{image_url}}) no-repeat center center; width:{{image_width}}px; height:{{image_height}}px' >
-	<img src='{{image_url}}' class='rounded-img{{#style}}{{style}}{{/style}}' {{image_size}} style='opacity:0'/>
+<span class='rounded-img{{#style}}{{style}}{{/style}}{{#float}} rounded-img-{{float}}{{/float}}' style='background:url({{image_url}}) no-repeat center center; width:{{image_width}}px; height:{{image_height}}px' >
+	<img src='{{image_url}}' class='rounded-img{{#style}}{{style}}{{/style}}' title='{{image_title}}' alt='{{image_title}}' {{image_size}} style='opacity:0'/>
 </span>

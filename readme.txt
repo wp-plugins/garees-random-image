@@ -60,6 +60,9 @@ Check if you have a cache-plugin running. If the page is cached, there won't be 
 
 == Changelog ==
 
+= 1.1.1 =
+* template 'rounded' has new custom-option "float" to control text-flow
+
 = 1.1 =
 * faster algorithm to find a random image of a certain category
 * if algorithm times out, make sure that an almost random image of the category is shown

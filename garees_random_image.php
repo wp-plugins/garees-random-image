@@ -3,9 +3,9 @@
 Plugin Name: Garee's Random Image
 Plugin URI: http://www.garee.ch/wordpress/garees-random-image/
 Description: Garee's Random Image is a wordpress plugin that displays a random image from a post-castegory of your blog. The plugin uses the template-system Mustache to achieve the best possible customization. Some templates are included. 
-Version: 1.1
+Version: 1.1.1
 Author: Sebastian Forster
-Author URI: http://www.garee.ch/
+Author URI: http://www.garee.ch/wordpress/
 License: GPL2
 */
 
